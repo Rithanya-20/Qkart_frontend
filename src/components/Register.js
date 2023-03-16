@@ -8,8 +8,15 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
 
+
+
 const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const [username, handleName] = useState("");
+  const [password, handlePassword] = useState("");
+  const [confirmPassword, handleConfirmPassword] = useState("");
+
+  
 
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement the register function
@@ -36,7 +43,54 @@ const Register = () => {
    * }
    */
   const register = async (formData) => {
+   
+
+  // console.log(formData.username);
+   const url = config.endpoint + "/auth/register";
+   console.log(url);
+
+   let response = await axios.post(url, {
+    "username":formData.username,
+    "password":formData.password
+   });
+
+   console.log(response.data);
+
+  //  await axios
+  //     .post(url, 
+  //    {
+  //     "username":formData.username,
+  //     "password":formData.password
+  //    })
+  //     .then(function (response) {        
+  //      alert("success");
+  //       console.log(response);
+  //     })
+  //     .catch(function (error) {
+  //       alert("failed");
+  //       if (typeof error.response === "undefined") {
+  //         console.log("network error");
+  //         // window.location.href = "/error-page";
+  //       }
+  //       if (error.response.status === 401) {
+  //         // Authorization error
+  //         console.log("401");
+  //         // window.location.href = "/signin";
+  //       } else if (error.response.status === 500) {
+  //         // Server error
+  //         // window.location.href = "/500-error";
+  //       } else {
+  //         return Promise.reject(error);
+  //       }
+  //       console.log(error);
+  //     });
+
+    
   };
+
+  const HandleRegister = () => {
+    return register({"username":username, "password": password, "confirmPassword":confirmPassword});
+  }
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement user input validation logic
   /**
@@ -57,6 +111,8 @@ const Register = () => {
    * -    Check that confirmPassword field has the same value as password field - Passwords do not match
    */
   const validateInput = (data) => {
+
+
   };
 
   return (
@@ -69,6 +125,7 @@ const Register = () => {
       <Header hasHiddenAuthButtons />
       <Box className="content">
         <Stack spacing={2} className="form">
+         
           <h2 className="title">Register</h2>
           <TextField
             id="username"
@@ -77,6 +134,8 @@ const Register = () => {
             title="Username"
             name="username"
             placeholder="Enter Username"
+            onChange= {(e) => handleName(e.target.value)}
+            
             fullWidth
           />
           <TextField
@@ -85,6 +144,7 @@ const Register = () => {
             label="Password"
             name="password"
             type="password"
+            onChange= {(e) => handlePassword(e.target.value)}
             helperText="Password must be atleast 6 characters length"
             fullWidth
             placeholder="Enter a password with minimum 6 characters"
@@ -94,10 +154,11 @@ const Register = () => {
             variant="outlined"
             label="Confirm Password"
             name="confirmPassword"
+            onChange= {(e) => handleConfirmPassword(e.target.value)}
             type="password"
             fullWidth
           />
-           <Button className="button" variant="contained">
+           <Button className="button" variant="contained" onClick={HandleRegister}>
             Register Now
            </Button>
           <p className="secondary-action">
@@ -106,6 +167,7 @@ const Register = () => {
               Login here
              </a>
           </p>
+         
         </Stack>
       </Box>
       <Footer />
