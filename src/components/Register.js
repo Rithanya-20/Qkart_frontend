@@ -15,6 +15,8 @@ const Register = () => {
   const [username, handleName] = useState("");
   const [password, handlePassword] = useState("");
   const [confirmPassword, handleConfirmPassword] = useState("");
+  const [dp, setDp] = useState(true);
+  const [load, setLoad] = useState(false);
 
   
 
@@ -43,54 +45,71 @@ const Register = () => {
    * }
    */
   const register = async (formData) => {
+
+  
+  if(validateInput(formData)){
+
    
+    setDp(false);
+    setLoad(true);
 
   // console.log(formData.username);
    const url = config.endpoint + "/auth/register";
    console.log(url);
-
-   let response = await axios.post(url, {
+   console.log( {
     "username":formData.username,
     "password":formData.password
    });
 
-   console.log(response.data);
+   await axios.post(url, {
+    "username":formData.username,
+    "password":formData.password
+   })
+   .then(function (response) {        
+        //  alert("success");
+         setDp(true);
+         setLoad(false);
+         enqueueSnackbar('Registered successfully', {variant:"success"});
+          // console.log(response.status);
+        })
+        .catch(function (error) {
+          // alert("failed");
+         
+          if (typeof error.response === "undefined") {
+            
+            enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+            console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+            // window.location.href = "/error-page";
+          }
+          else if (error.response.status === 400) {
+            // Authorization error
+            enqueueSnackbar(error.response.data.message, {variant:"error"});
 
-  //  await axios
-  //     .post(url, 
-  //    {
-  //     "username":formData.username,
-  //     "password":formData.password
-  //    })
-  //     .then(function (response) {        
-  //      alert("success");
-  //       console.log(response);
-  //     })
-  //     .catch(function (error) {
-  //       alert("failed");
-  //       if (typeof error.response === "undefined") {
-  //         console.log("network error");
-  //         // window.location.href = "/error-page";
-  //       }
-  //       if (error.response.status === 401) {
-  //         // Authorization error
-  //         console.log("401");
-  //         // window.location.href = "/signin";
-  //       } else if (error.response.status === 500) {
-  //         // Server error
-  //         // window.location.href = "/500-error";
-  //       } else {
-  //         return Promise.reject(error);
-  //       }
-  //       console.log(error);
-  //     });
+            console.log(error.message);
+            // window.location.href = "/signin";
+          } 
+          // else if (error.response.status === 500) {
+            // Server error
+            // window.location.href = "/500-error";
+          // }
+           else {
+            enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+
+            console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+            return Promise.reject(error);
+          }
+          console.log(error);
+        });
+
+      }
+  
+
+  
 
     
   };
 
-  const HandleRegister = () => {
-    return register({"username":username, "password": password, "confirmPassword":confirmPassword});
-  }
+  
 
   // TODO: CRIO_TASK_MODULE_REGISTER - Implement user input validation logic
   /**
@@ -112,6 +131,35 @@ const Register = () => {
    */
   const validateInput = (data) => {
 
+    console.log(data.password);
+    console.log(data.confirmPassword);
+
+
+    if(data.username === ""){
+      enqueueSnackbar("Username is a required field", {variant:"warning"});
+      return false;
+    }
+    else if(data.username.length < 6){
+      enqueueSnackbar("Username must be at least 6 characters", {variant:"warning"});
+      return false;
+    }
+    else if(data.password === ""){
+      enqueueSnackbar("Password is a required field", {variant:"warning"});
+      return false;
+    }
+    else if(data.password.length < 6){
+      enqueueSnackbar("Password must be at least 6 characters", {variant:"warning"});
+      return false;
+    }
+    else if(data.password !== data.confirmPassword){
+      enqueueSnackbar("Passwords do not match", {variant:"warning"});
+      return false;
+    }
+
+    else{
+      return true;
+    }
+
 
   };
 
@@ -127,6 +175,7 @@ const Register = () => {
         <Stack spacing={2} className="form">
          
           <h2 className="title">Register</h2>
+         
           <TextField
             id="username"
             label="Username"
@@ -158,9 +207,16 @@ const Register = () => {
             type="password"
             fullWidth
           />
-           <Button className="button" variant="contained" onClick={HandleRegister}>
+
+          {load && (
+          <center><CircularProgress /></center>
+          )}
+
+          {dp && (
+           <Button className="button" variant="contained" onClick={() => register({"username":username, "password": password, "confirmPassword":confirmPassword})}>
             Register Now
            </Button>
+            )}
           <p className="secondary-action">
             Already have an account?{" "}
              <a className="link" href="#">
