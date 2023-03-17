@@ -12,6 +12,11 @@
     display: none;
 }
 
+#user{
+    /* position: absolute; */
+    margin-top: 10px;
+}
+
 .header-title {
     cursor: pointer;
 }

@@ -8,12 +8,18 @@ import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Login.css";
+// import "./Products.js";
+import Register from "./Register.js";
+
+
 
 const Login = () => {
+  const history = useHistory(); 
   const { enqueueSnackbar } = useSnackbar();
+  const [load, setLoad] = useState();
   const [username, handleName] = useState("");
   const [password, handlePassword] = useState("");
-
+  let postUrl = config.endpoint +"/auth/login";
   // TODO: CRIO_TASK_MODULE_LOGIN - Fetch the API response
   /**
    * Perform the Login API call
@@ -42,15 +48,84 @@ const Login = () => {
   const login = async (formData) => {
 
     if(validateInput(formData)){
+      // console.log({ "username":formData.username,
+      // "password":formData.password});
       
-      let urls = "POST /api/v1/auth/login";
-      await axios.put(urls,{
-        "username":formData.username,
-        "password":formData.password
+      setLoad(true);
+     
+      
+      let body = {"username":formData.username,
+      "password":formData.password};
+      
+      await axios.post(postUrl, formData)
+      .then(function (response){
+        setLoad(false);
+        // console.log(response);
+        persistLogin(response.data.token, response.data.username, response.data.balance);
+        
+        enqueueSnackbar('Logged in successfully successfully', {variant:"success"});
+        history.push("/", {from:"Login"})
+      // <Link to='./products'></Link>
       })
-      .then(function(respone){
+      .catch(function (error){
+        setLoad(false);
 
+        if (typeof error.response === "undefined") {
+              
+          enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+          // console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+          // window.location.href = "/error-page";
+        }
+        else if (error.response.status === 400) {
+          // Authorization error
+          enqueueSnackbar(error.response.data.message, {variant:"error"});
+  
+          // console.log(error.message);
+          // window.location.href = "/signin";
+        } 
+        else{
+          enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+  
+          // console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+        }
+  
       });
+      
+    
+    
+    
+      // await axios.put(postUrl,formData)
+      // .then(function(response){
+      //   console.log(response.status);
+
+      // }).catch(function(error){
+        
+      //   if (typeof error.response === "undefined") {
+            
+      //     enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+      //     console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+      //     // window.location.href = "/error-page";
+      //   }
+      //   else if (error.response.status === 400) {
+      //     // Authorization error
+      //     enqueueSnackbar(error.response.data.message, {variant:"error"});
+
+      //     console.log(error.message);
+      //     // window.location.href = "/signin";
+      //   } 
+      //   // else if (error.response.status === 500) {
+      //     // Server error
+      //     // window.location.href = "/500-error";
+      //   // }
+      //    else {
+      //     enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
+
+      //     console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+      //     return Promise.reject(error);
+      //   }
+      //   console.log(error);
+
+      // });
 
     }
   };
@@ -99,6 +174,12 @@ const Login = () => {
    * -    `balance` field in localStorage can be used to store the balance amount in the user's wallet
    */
   const persistLogin = (token, username, balance) => {
+    var testObject ={"token":token, "username":username, "balance":balance};
+    // console.log(testObject);
+    localStorage.setItem('token',token);
+    localStorage.setItem('username',username);
+    localStorage.setItem('balance',balance);
+    // localStorage.setItem('testObject', JSON.stringify(testObject));
   };
 
   return (
@@ -111,6 +192,7 @@ const Login = () => {
       <Header hasHiddenAuthButtons />
       <Box className="content">
         <Stack spacing={2} className="form">
+        <h2 className="title">Login</h2>
         <TextField
             id="username"
             label="username"
@@ -133,17 +215,23 @@ const Login = () => {
             fullWidth
             placeholder="Password"
           />
-          <Button className="button" variant="contained" color="primary" onClick = {() => login({"username":username, "password":password}) }>
+          {load ? <center><CircularProgress/></center> :
+       
+            <Button className="button" variant="contained" color="primary" onClick = {() => login({"username":username, "password":password}) }>
           LOGIN TO QKART
+          {/* <Link to="/">Click Here!</Link> */}
            </Button>
+         
+            }
 
            <p className="secondary-action">
            Don’t have an account?{" "}
-           <a className="link" href="#">
+           {/* <a className="link" href="#">
               Register now
-             </a>
-           {/* <Link to=''>Register now</Link> */}
+             </a> */}
+           <Link to='/register'>Register now</Link>
           </p>
+         
         </Stack>
       </Box>
       <Footer />

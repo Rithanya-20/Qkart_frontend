@@ -6,11 +6,14 @@ import React, { useState } from "react";
 import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
+import { useHistory, Link } from "react-router-dom";
+
 import "./Register.css";
 
 
 
 const Register = () => {
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [username, handleName] = useState("");
   const [password, handlePassword] = useState("");
@@ -55,11 +58,11 @@ const Register = () => {
 
   // console.log(formData.username);
    const url = config.endpoint + "/auth/register";
-   console.log(url);
-   console.log( {
-    "username":formData.username,
-    "password":formData.password
-   });
+  //  console.log(url);
+  //  console.log( {
+  //   "username":formData.username,
+  //   "password":formData.password
+  //  });
 
    await axios.post(url, {
     "username":formData.username,
@@ -70,7 +73,9 @@ const Register = () => {
          setDp(true);
          setLoad(false);
          enqueueSnackbar('Registered successfully', {variant:"success"});
-          // console.log(response.status);
+         history.push("/login", {from:"Register"})
+         //  <Link to='./login'></Link> 
+         // console.log(response.status);
         })
         .catch(function (error) {
           // alert("failed");
@@ -78,14 +83,14 @@ const Register = () => {
           if (typeof error.response === "undefined") {
             
             enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
-            console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+            // console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
             // window.location.href = "/error-page";
           }
           else if (error.response.status === 400) {
             // Authorization error
             enqueueSnackbar(error.response.data.message, {variant:"error"});
 
-            console.log(error.message);
+            // console.log(error.message);
             // window.location.href = "/signin";
           } 
           // else if (error.response.status === 500) {
@@ -95,10 +100,10 @@ const Register = () => {
            else {
             enqueueSnackbar('Something went wrong. Check that the backend is running, reachable and returns valid JSON.', {variant:"error"});
 
-            console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
+            // console.log("Something went wrong. Check that the backend is running, reachable and returns valid JSON.");
             return Promise.reject(error);
           }
-          console.log(error);
+          // console.log(error);
         });
 
       }
@@ -131,8 +136,8 @@ const Register = () => {
    */
   const validateInput = (data) => {
 
-    console.log(data.password);
-    console.log(data.confirmPassword);
+    // console.log(data.password);
+    // console.log(data.confirmPassword);
 
 
     if(data.username === ""){
@@ -219,9 +224,11 @@ const Register = () => {
             )}
           <p className="secondary-action">
             Already have an account?{" "}
-             <a className="link" href="#">
+             {/* <a className="link" href="#">
               Login here
-             </a>
+             </a> */}
+
+             <Link to="/login" class="link">Login here</Link>
           </p>
          
         </Stack>
