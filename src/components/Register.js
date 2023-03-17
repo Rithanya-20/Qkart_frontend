@@ -213,7 +213,7 @@ const Register = () => {
           )}
 
           {dp && (
-           <Button className="button" variant="contained" onClick={() => register({"username":username, "password": password, "confirmPassword":confirmPassword})}>
+           <Button className="button" color="primary" variant="contained" onClick={() => register({"username":username, "password": password, "confirmPassword":confirmPassword})}>
             Register Now
            </Button>
             )}
