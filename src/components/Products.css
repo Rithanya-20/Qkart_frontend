@@ -63,6 +63,12 @@
     font-size: 3rem;
     width: 50%;
   }
+
+  .loadit{
+   
+    position: relative;
+    margin: 50px !important;
+  }
   .search-mobile {
     display: none !important;
   }
