@@ -6,9 +6,10 @@ import {
 } from "@mui/icons-material";
 import { Button, IconButton, Stack } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import "./Cart.css";
+
 
 // Definition of Data Structures used
 /**
@@ -47,8 +48,39 @@ import "./Cart.css";
  *    Array of objects with complete data on products in cart
  *
  */
+// const cartDetailes = [];
+
 export const generateCartItemsFrom = (cartData, productsData) => {
+  // console.log("Generate cart items from")
+  // console.log(cartData);
+  // console.log(productsData);
+
+  const cartDetailes = [];
+
+  for(let i=0; i<cartData.length; i++){
+   
+    for(let j=0; j<productsData.length; j++){
+    
+      if(cartData[i].productId === productsData[j]._id){
+        console.log("hello there")
+        // console.log(cartData[i].qty)
+        // ItemQuantity(cartData[i].qty)
+        cartDetailes[i]= productsData[j];
+        cartDetailes[i].qty = cartData[i].qty;
+       
+      }
+      // console.log(cartDetailes[i]);
+    }
+    
+
+  }
+  console.log("qty here")
+  console.log(cartDetailes);
+  
+  return cartDetailes;
 };
+
+// console.log(cartDetailes);
 
 /**
  * Get the total value of all products added to the cart
@@ -61,6 +93,20 @@ export const generateCartItemsFrom = (cartData, productsData) => {
  *
  */
 export const getTotalCartValue = (items = []) => {
+  
+  let toto = 0;
+
+  for(let i=0; i < items.length; i++){
+    for(let j=0; j<items[i].qty; j++){
+         toto += items[i].cost;
+    }
+  }
+
+
+
+  return toto;
+
+  
 };
 
 
@@ -78,20 +124,28 @@ export const getTotalCartValue = (items = []) => {
  * 
  * 
  */
+
+
+
 const ItemQuantity = ({
   value,
   handleAdd,
   handleDelete,
-}) => {
+}
+  
+
+) => {
+  
+
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={handleDelete}>
+      <IconButton size="small" color="primary" onClick={(e) => (handleDelete(e))}>
         <RemoveOutlined />
       </IconButton>
       <Box padding="0.5rem" data-testid="item-qty">
         {value}
       </Box>
-      <IconButton size="small" color="primary" onClick={handleAdd}>
+      <IconButton size="small" color="primary" onClick={(e) => (handleAdd(e))}>
         <AddOutlined />
       </IconButton>
     </Stack>
@@ -117,6 +171,14 @@ const Cart = ({
   items = [],
   handleQuantity,
 }) => {
+  const history = useHistory(); 
+  const handleAdd = (productId, qty) => {
+    handleQuantity(productId, qty + 1);
+  }
+
+  const handleDelete = (productId, qty) => {
+    handleQuantity(productId, Math.max( qty - 1,0));
+  }
 
   if (!items.length) {
     return (
@@ -133,6 +195,48 @@ const Cart = ({
     <>
       <Box className="cart">
         {/* TODO: CRIO_TASK_MODULE_CART - Display view for each cart item with non-zero quantity */}
+        {items.map((val) => {
+
+          return (
+            <Box display="flex" alignItems="flex-start" padding="1rem">
+                <Box className="image-container">
+                    <img
+                        // Add product image
+                        src={val.image}
+                        // Add product name as alt eext
+                        alt={val.name}
+                        width="100%"
+                        height="100%"
+                    />
+                </Box>
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="space-between"
+                    height="6rem"
+                    paddingX="1rem"
+                >
+                    <div>{val.name}</div>
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                    >
+                    <ItemQuantity value = {val.qty}
+
+                    handleAdd = {() => (handleAdd(val._id, val.qty))}
+                    handleDelete = {() => (handleDelete(val._id, val.qty))}
+                    />
+                    <Box padding="0.5rem" fontWeight="700">
+                        ${val.cost}
+                    </Box>
+                    </Box>
+                </Box>
+            </Box>);
+        })}
+
+
+        
         <Box
           padding="1rem"
           display="flex"
@@ -156,6 +260,7 @@ const Cart = ({
         <Box display="flex" justifyContent="flex-end" className="cart-footer">
           <Button
             color="primary"
+            onClick={() => history.push("/checkout", { from: "Cart" })}
             variant="contained"
             startIcon={<ShoppingCart />}
             className="checkout-btn"

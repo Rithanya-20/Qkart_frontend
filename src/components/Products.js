@@ -15,6 +15,8 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
 import ProductCard from "./ProductCard";
+import Cart from "./Cart"
+import {generateCartItemsFrom} from "./Cart"
 
 // Definition of Data Structures used
 /**
@@ -30,6 +32,8 @@ import ProductCard from "./ProductCard";
 
 
 const Products = () => {
+
+  const {enqueueSnackbar} = useSnackbar();
  
   const[product,setProduct] = useState([]);
   const [searchKey, setSearchKey] = useState("");
@@ -42,14 +46,97 @@ const Products = () => {
  
   const [isMainPage, setIsMainPage] = useState(false);
   const [debounceTimeout, setDebounceTimeout] = useState(0);
+  const [getun, setUn] = useState();
+
+  const [displayCart, setDisplayCart] = useState([]);
+  const [displayAddToCard, setDisplayAddToCart] = useState([]);
+  
+
+
   let s;
   let url;
   let searchUrl;
-  // let ls = localStorage.getItem("search");
+  let access_token;
+  let getCartItem;
+  // let dataCart;
+ 
+  // let returnedCartData = [];
+
+  useEffect(async() => {
+   
+  const productDataCart = await performAPICall();
+  
+  setProduct(productDataCart);
+   let ls = localStorage.getItem("username");
+  
+   access_token = localStorage.getItem("token");
+   
+   console.log("helo "+ access_token);
+  if(access_token){
+  //  postCart();
+  
+   
+   let dataCart = await fetchCart(access_token);
+   console.log("This is data cart")
+   console.log(dataCart);   
+   setDisplayCart(dataCart);
+
+   let returnedCartData = generateCartItemsFrom(dataCart, productDataCart);
+   
+  console.log("Returned card data");
+  console.log(returnedCartData)
+
+ //  setDisplayCart(returnedCartData);
+    setDisplayAddToCart(returnedCartData);
+
+  }
+   
+   
+   setUn(ls);
+
+  //  performSearch(searchKey);
+  }, []);
+
+  // let returnedCartDataa;
+  // useEffect(()=>{
+
+  //   let returnedCartDataa = generateCartItemsFrom(displayCart, product);
+
+  //   setDisplayAddToCart(returnedCartDataa);
+
+  //   console.log("This is displayCart")
+  //   console.log(displayCart);
+  
+  //   console.log("This id displayAddToCart")
+  //   console.log(displayAddToCard)
+
+  //   console.log("Add to cart in returnedCartDetail response")
+  //   console.log(returnedCartDataa)
+
+  // },[displayCart])
+
+  
+  // console.log("This is displayCart")
+  // console.log(displayCart);
+
+  // console.log("This id displayAddToCart")
+  // console.log(displayAddToCard)
+
+  // useEffect(() => {
+  //   setDisplayCart(generateCartItemsFrom(displayAddToCard, product));
+  // },[displayAddToCard])
+
+  
+
+
+//  if(ls){
+//     console.log(ls);
+//   }
+  
+  
   // const debounceSearchText = debounceSearch(searchKey, 500);
 
- 
-
+  
 
 
   // useEffect(() => {
@@ -112,41 +199,19 @@ const Products = () => {
   
   setIsLoading(true);
 
-  // console.log(url);
-  // setLoad(true); 
-  // setGrid(false);
-  // setNoProd(false);
-  
-  // if (titleQuery !== "") {
-
-  //   return performSearch(titleQuery);
-
-  //   // console.log(titleQuery);
-  //   // setLoad(false);
-  //   // setGrid(true);
-  //   // setNoProd(false);
-  //   // url = config.endpoint + "/products" + "/search?value="+titleQuery;
+try{
+  let response = await axios.get(url)
     
-  //   // console.log(url);
-  // }
-  // const response = await axios.get(url);
-
-  // setProduct(await response.clone().json());
-
-  
-
-   try{
-  await axios.get(url).then((res) => {
-    // setLoad(false);
-    // setGrid(true);
-    // setNoProd(false);
-    setProduct(res.data);
+    setProduct(response.data);
 
     setIsLoading(false);
     setIsProduct(true);
     setIsMainPage(true);
-    return res.data;
-  });
+    console.log("inside api")
+    console.log(response.data);
+    // productDataCart = res.data;
+    return response.data;
+ 
 } 
 catch(error){
   // setNoProd(true);
@@ -183,7 +248,70 @@ catch(error){
    * API endpoint - "GET /products/search?value=<search-query>"
    *
    */
-  const performSearch = async (text) => {
+
+  const postCart = async(productId, qty) => {
+    let token = localStorage.getItem("token");
+    let postUrl = config.endpoint + "/cart";
+    console.log("inside postcart")
+    // console.log(formData);
+    let body = {"productId": productId,"qty": qty};
+
+try{
+   let response = await axios.post(postUrl,body, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-type' : 'application/json'
+      }
+    });
+
+    // return response.data;
+    setDisplayCart(response.data);
+
+    let returnedCData = generateCartItemsFrom(response.data, product);
+
+    setDisplayAddToCart(returnedCData);
+    // window.location.reload();
+  }
+  catch(err){
+    console.log(err);
+  }
+  
+  }
+
+  const fetchCart = async(access_token) => {
+
+    if(access_token){
+   
+    let getUrl = config.endpoint + "/cart";
+try
+   { 
+    let response = await axios.get(getUrl, {
+      headers: {
+        'Authorization': `Bearer ${access_token}` 
+       
+      }
+    });
+    
+    // console.log(response.data);
+    // getCartItem = response.data;
+    return response.data;
+    
+  
+  }
+    catch(err){
+      if(err.response){
+        console.log(err.response);
+      }
+      else{
+        console.log("err in else");
+      }
+    }
+
+    
+  }
+
+  }
+   const performSearch = async (text) => {
 
     // setLoad(true);
     // setGrid(false);
@@ -257,25 +385,7 @@ catch(error){
       }, 500); // Update set timeoutId    
       setDebounceTimeout(timeOut);
 
-    // setTimeout(() => 
-    //   performSearch(event)
-    // , debounceSearch);
     
-  
-  //   console.log(event);
-  //   console.log(debounceTimeout);
-
-    
-    
-  //   const timeout = setTimeout(() => {
-     
-  //   // console.log("**" + event);
-  //   performSearch(event);
-
-  // }, 5000);
-
-  // console.log(timeout);
-  // // clearTimeout(timeout);
 
 
   
@@ -285,30 +395,213 @@ catch(error){
   // onChange={(event)=>{debounceSearch(event,500)}}
   const handleInputChange = (e) => {
     debounceSearch(e, debounceTimeout);
-    //  s = e.target.value;
-    //  setSearchKey(s);
-    //  debounceSearch(s, 5000);
-    //  setSearchKey( debounceSearch(s, 5000));
+    
   }
+  // console.log(access_token);
 
-  useEffect(() => {
-    // console.log("hellothere");
-   performAPICall();
-  //  performSearch(searchKey);
-  }, []);
+  
+// TODO: CRIO_TASK_MODULE_CART - Return if a product already exists in the cart
+  /**
+   * Return if a product already is present in the cart
+   *
+   * @param { Array.<{ productId: String, quantity: Number }> } items
+   *    Array of objects with productId and quantity of products in cart
+   * @param { String } productId
+   *    Id of a product to be checked
+   *
+   * @returns { Boolean }
+   *    Whether a product of given "productId" exists in the "items" array
+   *
+   */
+  const isItemInCart = (items, productId) => {
+    
+    console.log(items)
+    console.log(productId)
+    // const itemsInCart = items.filter(i => i.productId === productId);
+    console.log("Hello ther im in item cart")
+
+    for(let i=0; i< items.length; i++){
+      console.log("*")
+      if(items[i].productId === productId){
+        return true;
+      }
+    }
+    
+    return false;
+  };
+ 
+  /**
+   * Perform the API call to add or update items in the user's cart and update local cart data to display the latest cart
+   *
+   * @param {string} token
+   *    Authentication token returned on login
+   * @param { Array.<{ productId: String, quantity: Number }> } items
+   *    Array of objects with productId and quantity of products in cart
+   * @param { Array.<Product> } products
+   *    Array of objects with complete data on all available products
+   * @param {string} productId
+   *    ID of the product that is to be added or updated in cart
+   * @param {number} qty
+   *    How many of the product should be in the cart
+   * @param {boolean} options
+   *    If this function was triggered from the product card's "Add to Cart" button
+   *
+   * Example for successful response from backend:
+   * HTTP 200 - Updated list of cart items
+   * [
+   *      {
+   *          "productId": "KCRwjF7lN97HnEaY",
+   *          "qty": 3
+   *      },
+   *      {
+   *          "productId": "BW0jAAeDJmlZCF8i",
+   *          "qty": 1
+   *      }
+   * ]
+   *
+   * Example for failed response from backend:
+   * HTTP 404 - On invalid productId
+   * {
+   *      "success": false,
+   *      "message": "Product doesn't exist"
+   * }
+   */
+  
+
+
+ 
+
+  const addToCart = async (
+    token,
+    items,
+    products,
+    productId,
+    qty,
+    options = { preventDuplicate: false }
+  ) => {
+    
+   
+  
+
+    if(token != ''){
+
+      if(options.preventDuplicate){
+
+        
+
+      if(isItemInCart(displayCart, productId)){
+ 
+        console.log("helo im inside prevent dub")
+
+        enqueueSnackbar('Item already in cart. Use the cart sidebar to update quantity or remove item.', {variant:"warning"});
+        // <enqueueSnackbar style={{variant:"warning"}}>Item already in cart. Use the cart sidebar to update quantity or remove item.</enqueueSnackbar>
+        console.log("already present");
+        
+      }
+      else{
+
+        console.log("posting occurs")
+
+        postCart(productId, qty);
+        // await postCart({"productId":productId, "qty":qty}, token);
+        // let token = localStorage.getItem("token");
+        // let postUrl = config.endpoint + "/cart";
+
+        // let body = {"productId":productId, "qty":qty};
+
+        // axios.post(postUrl,items, {
+        //   headers: {
+        //     'Authorization': `Bearer ${token}`,
+        //     'Content-type' : 'application/json'
+        //   }
+        // }).then(function(response){
+          
+
+        //  setDisplayCart(response.data);
+
+
+
+
+
+        //  let returnedData = generateCartItemsFrom(response.data, products);
+
+        //  setDisplayAddToCart(returnedData);
+
+        //  console.log("Add to cart in returnedCartDetail response")
+        //  console.log(returnedCartDataa)
+        
+   
+
+ //  setDisplayCart(returnedCartData);
+
+        //  setDisplayAddToCart(returnedCartDataa);
+
+
+          // console.log("Inside addtocard axios")
+          // console.log(response.data);
+
+        // }).catch(function(err){
+        //   console.log(err)
+        // });
+
+      }
+    }
+    else{
+      console.log("Indise the handle quantity")
+      console.log(items);
+      postCart(productId, qty);
+    }
+
+    }
+
+    else{
+      enqueueSnackbar('Login to add an item to the Cart', {variant:"warning"})
+      // console.log('Login to add an item to the Cart', {variant:"warning"});
+      return null;
+    }
+
+   
+
+   
+
+    
+
+   
+  };
+ 
+
 
   // useEffect(() => {
 
-  //   if(searchKey){
-  //     if(timerId){
-  //       clearTimeout(timerId);
-  //     }
-  //     const debounceTimeId = debounceSearch(searchKey, 500);
-  //     setTimeId(debounceTimeId);
+  //   console.log("Hey i am baked")
 
-  //   }
+  // },[displayAddToCard])
 
-  // }, [searchKey])
+ 
+
+
+  const handleQuantity = (productId, qty) => {
+
+    console.log("product ID: " + productId)
+    console.log("qty : "+ qty);
+    let options = {preventDuplicate:false}
+    if(qty === 0){
+      console.log("hello im peeking here")
+      options = {...options, ["delete"]:true}
+
+    }
+   let token = localStorage.getItem("token");
+    
+  addToCart(token, displayCart, product, productId, qty, options );
+
+      
+    
+  }
+
+
+  
+
+  
 
 
 
@@ -364,7 +657,107 @@ catch(error){
         placeholder="Search for items/categories"
         name="search"
       />
-       <Grid container>
+
+       {(getun) ? (
+
+              <Grid container>
+                  
+                    
+              <Grid container spacing = {2} md={9} xs={12}>
+                <Grid item className="product-grid" md={12}>
+                  <Box className="hero">
+                    <p className="hero-heading">
+                      India’s <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
+                      to your door step
+                    </p>
+                  </Box>
+                </Grid>
+
+                <div style={{ padding: 10 }}>
+
+              <Grid container spacing = {2}>
+
+           
+
+              {isloading ? (
+              //load
+              <div><Grid container spacing={2} direction="column" className="loading"><center><CircularProgress /></center>
+              <center><strong>Loading Products...</strong></center></Grid>
+              </div>
+              ) :
+
+              ( isProduct ? (
+              isMainPage ? (
+              //product page
+
+              product.map((val) => {
+                
+                return (
+                  <Grid item xs={6} md={3} key = {val._id} className="product-grid">
+                    <ProductCard product={val} handleAddToCart = {addToCart}
+                        
+                    />
+                  </Grid>
+                );
+              })
+
+              
+              ) : ( 
+
+              //filterpage
+              
+              filtered.map((val) => {
+                
+                return (
+                  <Grid item xs={6} md={3} key = {val._id} className="product-grid">
+                    <ProductCard product={val} handleAddToCart = {addToCart}
+                        
+                    />
+                  </Grid>
+                );
+              })
+
+              )):(
+
+              <div ><Grid container spacing={2} direction="column" className="loading">
+              <center>
+                <SentimentDissatisfied />
+                <p>No products found!</p>
+                </center></Grid>
+              </div>
+
+              )
+              
+              )
+
+              }
+
+              </Grid>
+              </div>
+              </Grid>
+
+              <Grid container xs={12} md={3} bgcolor="#E9F5E1">
+              
+              <Grid item xs={12} md={12}>
+                
+                <Cart  items = {displayAddToCard} products = {product}  handleQuantity = {handleQuantity}
+                  />
+
+                
+               
+              
+              </Grid>
+              
+              </Grid>
+
+              </Grid>
+
+
+
+       ):(
+        
+        <Grid>
+          <Grid container>
          <Grid item className="product-grid">
            <Box className="hero">
              <p className="hero-heading">
@@ -375,51 +768,8 @@ catch(error){
          </Grid>
        </Grid>
 
-       {/* {noProd && (
-        <div ><Grid container spacing={2} direction="column" className="loading">
-        <center>
-         <SentimentDissatisfied />
-         <p>No products found!</p>
-         </center></Grid>
-        </div>
-       ) 
-        } 
-
-       { load && (
        
-       <div className="loadit"><Grid container spacing={2} direction="column" className="loading"><center><CircularProgress /></center>
-       <center><strong>Loading Products...</strong></center></Grid>
-      </div>
-      
-      ) }
-
-      {grid && ( <Grid container spacing={2}>
-        {product.map((val) => {
-          
-          return (
-            <Grid item xs={6} md={3} key = {val._id}>
-              <ProductCard product={val}
-                 
-              />
-            </Grid>
-          );
-        })}
-      </Grid>)}
-
-
-      {filterGrid && ( <Grid container spacing={2}>
-        {filtered.map((val) => {
-          
-          return (
-            <Grid item xs={6} md={3} key = {val._id}>
-              <ProductCard product={val}
-                 
-              />
-            </Grid>
-          );
-        })}
-      </Grid>)} */}
-
+     <div style={{ padding: 20 }}>
 
       {isloading ? (
         //load
@@ -436,7 +786,7 @@ catch(error){
           
           return (
             <Grid item xs={6} md={3} key = {val._id}>
-              <ProductCard product={val}
+              <ProductCard product={val} handleAddToCart = {addToCart}
                  
               />
             </Grid>
@@ -452,7 +802,7 @@ catch(error){
           
           return (
             <Grid item xs={6} md={3} key = {val._id}>
-              <ProductCard product={val}
+              <ProductCard product={val} handleAddToCart = {addToCart}
                  
               />
             </Grid>
@@ -473,104 +823,19 @@ catch(error){
       )
       
     }
+    </div>
 
-    {/* {
-      isNoProduct && (
-        <div ><Grid container spacing={2} direction="column" className="loading">
-        <center>
-         <SentimentDissatisfied />
-         <p>No products found!</p>
-         </center></Grid>
-        </div>
-      )
-    } */}
+        </Grid>
 
-       
+       )}
+     
 
-       {/* {noProd ? (
-        <div>
-        <center>
-         <SentimentDissatisfied />
-         <p>No products found!</p>
-         </center>
-        </div>
-       ) : 
-       
-       ( <Grid container spacing={2}>
-        {product.map((val) => {
           
-          return (
-            <Grid item xs={6} md={3}>
-              <ProductCard product={val}
-
-              />
-            </Grid>
-          );
-        })}
-      </Grid>)
-      }
-
-      
-
-       { load ?
-       
-       
-       (<div><center><CircularProgress /></center>
-           <center><strong>Loading Products..</strong>.</center>
-      </div>)
-      
-      
-      :
-
-      ( <Grid container spacing={2}>
-        {product.map((val) => {
-          
-          return (
-            <Grid item xs={6} md={3}>
-              <ProductCard product={val}
-
-              />
-            </Grid>
-          );
-        })}
-      </Grid>)
-
-     } */}
-
-       {/* <ProductCard/> */}
-
-       {/* <Button onClick = {performAPICall}>Get</Button> */}
-
-       {/* <Grid container spacing={2}>
         
-       <Grid container spacing={2}>
-             {
-              productData.map((x) => {
-                <Grid item xs={6} md={3} key={x['_id']}>
-              <ProductCard product={x}
-               
-              />
-            </Grid>
 
-              })
-             }
-          </Grid>
-        {/* {product.map((val) => {
-          
-          return (
-
-            <Grid item xs={6} md={3}>
-              <ProductCard
-                image={val[0].image}
-                name={val[0].name}
-                cost={val[0].cost}
-                rating={val[0].rating}
-              />
-            </Grid>
-          );
-        })} */}
-      {/* </Grid> */} 
-       
+     
+    
+      
       <Footer />
     </div>
   );
