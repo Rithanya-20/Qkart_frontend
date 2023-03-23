@@ -55,7 +55,7 @@ if(gettoken){
         <Rating name="read-only" value={product.rating} readOnly />
       </CardContent>
       <CardActions className="card-actions">
-        <Button size="large" fullWidth key={product._id} variant="contained" className="card-button" onClick={() => (handleAddToCart(token, {'productId' : product._id, 'qty' : 1}, product, product._id, 1, { preventDuplicate: true }))}>ADD TO CART</Button>
+        <Button size="large" fullWidth key={product._id} variant="contained" className="card-button" onClick={() => (handleAddToCart(token, {'productId' : product._id, 'qty' : 1}, product, product._id, 1, { preventDuplicate: true }))}><AddShoppingCartOutlined />ADD TO CART</Button>
       
       </CardActions>
     </Card>

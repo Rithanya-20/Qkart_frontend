@@ -229,7 +229,7 @@ const Login = () => {
            {/* <a className="link" href="#">
               Register now
              </a> */}
-           <Link to='/register'>Register now</Link>
+           <Link to='/register' class="link">Register now</Link>
           </p>
          
         </Stack>

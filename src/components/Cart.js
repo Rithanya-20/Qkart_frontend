@@ -124,6 +124,12 @@ export const getTotalCartValue = (items = []) => {
  *
  */
 export const getTotalItems = (items = []) => {
+  let quant = 0;
+
+  for(let i=0; i<items.length ; i++){
+    quant = quant + items[i].qty;
+  }
+  return quant;
 };
 
 // TODO: CRIO_TASK_MODULE_CHECKOUT - Add static quantity view for Checkout page cart
@@ -147,6 +153,7 @@ const ItemQuantity = ({
   value,
   handleAdd,
   handleDelete,
+  isReadOnly
 }
   
 
@@ -155,15 +162,32 @@ const ItemQuantity = ({
 
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={(e) => (handleDelete(e))}>
-        <RemoveOutlined />
-      </IconButton>
-      <Box padding="0.5rem" data-testid="item-qty">
-        {value}
-      </Box>
-      <IconButton size="small" color="primary" onClick={(e) => (handleAdd(e))}>
-        <AddOutlined />
-      </IconButton>
+      { isReadOnly ? 
+      
+      (
+        <>
+        
+         <Box padding="0.5rem" data-testid="item-qty">
+         Qty: {value}
+       </Box>
+        
+      </>
+      ) : (
+            <>
+          <IconButton size="small" color="primary" onClick={(e) => (handleDelete(e))}>
+            <RemoveOutlined />
+          </IconButton>
+          <Box padding="0.5rem" data-testid="item-qty">
+          {value}
+        </Box>
+          <IconButton size="small" color="primary" onClick={(e) => (handleAdd(e))}>
+          <AddOutlined />
+        </IconButton>
+        </>
+  )
+      }
+     
+     
     </Stack>
   );
 };
@@ -188,7 +212,11 @@ const Cart = ({
   products,
   items = [],
   handleQuantity,
+  isReadOnly
 }) => {
+
+  console.log("About isReadOnly")
+  console.log(isReadOnly)
   const history = useHistory(); 
   const handleAdd = (productId, qty) => {
     handleQuantity(productId, qty + 1);
@@ -240,14 +268,32 @@ const Cart = ({
                         justifyContent="space-between"
                         alignItems="center"
                     >
-                    <ItemQuantity value = {val.qty}
+                          {isReadOnly ? 
+                            
+                            (<ItemQuantity
 
-                    handleAdd = {() => (handleAdd(val._id, val.qty))}
-                    handleDelete = {() => (handleDelete(val._id, val.qty))}
-                    />
-                    <Box padding="0.5rem" fontWeight="700">
-                        ${val.cost}
-                    </Box>
+                          isReadOnly
+                              
+                          value = {val.qty}
+
+                          handleAdd = {() => (handleAdd(val._id, val.qty))}
+                          handleDelete = {() => (handleDelete(val._id, val.qty))}
+
+                        
+                          />) : 
+                          
+                          (
+                            <ItemQuantity value = {val.qty}
+
+                          handleAdd = {() => (handleAdd(val._id, val.qty))}
+                          handleDelete = {() => (handleDelete(val._id, val.qty))}
+                          />
+      
+
+                          )}
+                          <Box padding="0.5rem" fontWeight="700">
+                              ${val.cost}
+                          </Box>
                     </Box>
                 </Box>
             </Box>);
@@ -261,9 +307,146 @@ const Cart = ({
           justifyContent="space-between"
           alignItems="center"
         >
-          <Box color="#3C3C3C" alignSelf="center">
-            Order total
+              <Box color="#3C3C3C" alignSelf="center">
+                Order total
+              </Box>
+              <Box
+                color="#3C3C3C"
+                fontWeight="700"
+                fontSize="1.5rem"
+                alignSelf="center"
+                data-testid="cart-total"
+              >
+                ${getTotalCartValue(items)}
+              </Box>
+        </Box>
+
+        {isReadOnly ? (<></>):(<Box display="flex" justifyContent="flex-end" className="cart-footer">
+          <Button
+            color="primary"
+            onClick={() => {history.push("/checkout", { from: "Cart" })}}
+            variant="contained"
+            startIcon={<ShoppingCart />}
+            className="checkout-btn"
+          >
+            Checkout
+          </Button>
+        </Box> )}
+      </Box>
+
+      <>
+      {isReadOnly ? (<>
+        <Box className="cart">
+
+        <Box
+          color="#3C3C3C"
+          fontWeight="700"
+          fontSize="1.5rem"
+          alignSelf="center"
+          data-testid="cart-total"
+          padding="1rem"
+         
+        >
+
+
+        
+          
+        <Box fontWeight="700">
+            Order Details
           </Box>
+
+          <Box
+           
+          >
+           
+          </Box>
+          </Box>
+
+        <Box
+          padding="1rem"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+
+
+        
+          
+        <Box >
+            Product
+          </Box>
+
+          <Box
+            color="#3C3C3C"
+           
+            fontSize="1rem"
+            alignSelf="center"
+            data-testid="cart-total"
+          >
+            {getTotalItems(items)}
+          </Box>
+          </Box>
+
+        <Box
+          padding="1rem"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+
+
+        
+          
+        <Box >
+            Subtotal
+          </Box>
+
+          <Box
+            color="#3C3C3C"
+           
+            fontSize="1rem"
+            alignSelf="center"
+            data-testid="cart-total"
+          >
+            ${getTotalCartValue(items)}
+          </Box>
+          </Box>
+        <Box
+          padding="1rem"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+
+          
+        <Box >
+            Shipping Charges
+          </Box>
+
+          <Box
+            color="#3C3C3C"
+           
+            fontSize="1rem"
+            alignSelf="center"
+            data-testid="cart-total"
+          >
+            $0
+          </Box>
+          </Box>
+        <Box
+          padding="1rem"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+
+
+        
+          
+        <Box fontWeight="700">
+            Total
+          </Box>
+
           <Box
             color="#3C3C3C"
             fontWeight="700"
@@ -273,20 +456,12 @@ const Cart = ({
           >
             ${getTotalCartValue(items)}
           </Box>
-        </Box>
+          </Box>
 
-        <Box display="flex" justifyContent="flex-end" className="cart-footer">
-          <Button
-            color="primary"
-            onClick={() => history.push("/checkout", { from: "Cart" })}
-            variant="contained"
-            startIcon={<ShoppingCart />}
-            className="checkout-btn"
-          >
-            Checkout
-          </Button>
         </Box>
-      </Box>
+      
+      </>):(<></>)}
+      </>
     </>
   );
 };

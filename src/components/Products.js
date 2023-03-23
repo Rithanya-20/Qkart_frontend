@@ -660,7 +660,7 @@ try
 
        {(getun) ? (
 
-              <Grid container>
+          <Grid container>
                   
                     
               <Grid container spacing = {2} md={9} xs={12}>
@@ -673,15 +673,15 @@ try
                   </Box>
                 </Grid>
 
-                <div style={{ padding: 10 }}>
+                {/* <div style={{ padding: 10 }}> */}
 
-              <Grid container spacing = {2}>
+              <Grid container spacing = {2} px="1rem" my="1rem">
 
            
 
               {isloading ? (
               //load
-              <div><Grid container spacing={2} direction="column" className="loading"><center><CircularProgress /></center>
+              <div><Grid container item spacing={2} direction="column" className="loading"><center><CircularProgress /></center>
               <center><strong>Loading Products...</strong></center></Grid>
               </div>
               ) :
@@ -719,12 +719,14 @@ try
 
               )):(
 
-              <div ><Grid container spacing={2} direction="column" className="loading">
-              <center>
+              <Grid container item spacing={2} direction="column" className="loading">
+             
+                
                 <SentimentDissatisfied />
                 <p>No products found!</p>
-                </center></Grid>
-              </div>
+                
+                </Grid>
+              
 
               )
               
@@ -733,7 +735,7 @@ try
               }
 
               </Grid>
-              </div>
+              {/* </div> */}
               </Grid>
 
               <Grid container xs={12} md={3} bgcolor="#E9F5E1">
@@ -811,12 +813,12 @@ try
       </Grid>
       )):(
 
-        <div ><Grid container spacing={2} direction="column" className="loading">
-        <center>
+        <Box className="loading">
+       
          <SentimentDissatisfied />
          <p>No products found!</p>
-         </center></Grid>
-        </div>
+         </Box>
+        
 
       )
         
